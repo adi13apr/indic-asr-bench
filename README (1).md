@@ -9,10 +9,11 @@ zero-shot model on clean and noisy audio, with a word-level failure-mode analysi
 
 | Model | WER | CER |
 |---|---|---|
-| Whisper-small, zero-shot | TBD | TBD |
+| Whisper-small, zero-shot | 80.7% | 47.4% |
 | Whisper-small + LoRA (this project) | **27.8%** | **10.4%** |
 
-The LoRA adapter trains only **1.44% of the model's parameters** (3.5M of 245M).
+That is a **66% relative WER reduction** and a **78% relative CER reduction**, while the LoRA
+adapter trains only **1.44% of the model's parameters** (3.5M of 245M).
 
 ## Setup
 
@@ -106,8 +107,19 @@ Key observations:
 
 The first evaluations used `max_new_tokens=225`. Hindi uses many tokens in Whisper's tokenizer,
 so long sentences were cut off before they finished. Raising the limit to 440 (Whisper's maximum
-is 448) improved the fine-tuned model from 28.6% to 27.8% WER. The clean-test results above use
-440; the noise benchmark and the error breakdown come from the earlier 225-token run.
+is 448) changed the two models in opposite directions:
+
+| Model | WER at 225 tokens | WER at 440 tokens |
+|---|---|---|
+| Zero-shot | 66.2% | 80.7% |
+| LoRA | 28.6% | 27.8% |
+
+The fine-tuned model improved because long sentences could finish. The zero-shot model got
+worse because its hallucinations and repetition loops could now run longer, adding more inserted
+words. The lower cap had been hiding part of the zero-shot model's failure.
+
+The clean-test results at the top use 440. The noise benchmark and the error breakdown come from
+the earlier 225-token run.
 
 ## Limitations and next steps
 
